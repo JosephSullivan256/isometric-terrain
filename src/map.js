@@ -15,11 +15,23 @@ function choose_random_index(frequencies, total){
 }
 
 export default class TileMap {
-	constructor() {
-		this.n = 24;
+	constructor(n) {
+		this.n = n;
 
 		this.init_height_map();
 		this.init_tile_map();
+	}
+
+	register_with_drawer(renderer){
+		this.renderer = renderer;
+
+		// iterate the diagonal cross sections in case a tile extends outside of its boundaries
+		// otherwise, we would have z issues
+		for(let i = 0; i < 2*this.n-1; i++){
+			this.renderer.add_drawable(i, {
+				draw: (ctx)=>{this.draw_z(i, ctx)}
+			})
+		}
 	}
 
 	init_height_map(){
@@ -65,8 +77,16 @@ export default class TileMap {
 		return [-x+y, x+y];
 	}
 
+	z(r,c){
+		return (r+c); // xy(r,c)[1]*2;
+	}
+
 	xy(r,c){
-		return [r+c, -r+c];
+		return [(-r+c)/2.0, (r+c)/2.0];
+	}
+
+	get_height(r,c){
+		return this.height_map[r][c];
 	}
 
 	*z_depth(z){
@@ -74,26 +94,15 @@ export default class TileMap {
 			let x = j - (Math.min(z+1,2*this.n-z-1)/2.0) + 0.5;
 			let y = z/2.0;
 
-			yield [this.tile_image, x, y]
+			yield [x, y]
 		}
 	}
 
-	draw(ctx) {
-		ctx.save();
-
-		ctx.translate(400, 0);
-		ctx.scale(1, 1);
-
-		// iterate the diagonal cross sections in case a tile extends outside of its boundaries
-		// otherwise, we would have z issues
-		for(let i = 0; i < 2*this.n-1; i++){
-			for(let [tile, x, y, r, c] of this.z_depth(i)){
-				let [r,c] = this.rc(x,y);
-				let tile = this.tiles[this.tile_map[r][c]];
-				ctx.drawImage(tile.image, x*28 + tile.offset[0], y*16 + tile.offset[1] + this.height_map[r][c]);
-			}
+	draw_z(z, ctx){
+		for(let [x, y] of this.z_depth(z)){
+			let [r,c] = this.rc(x,y);
+			let tile = this.tiles[this.tile_map[r][c]];
+			ctx.drawImage(tile.image, x*28 + tile.offset[0], y*16 + tile.offset[1] + this.height_map[r][c]);
 		}
-
-		ctx.restore();
 	}
 }

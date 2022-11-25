@@ -1,3 +1,5 @@
+import Drawer from "./drawer";
+import Goat from "./goat";
 import TileMap from "./map";
 import Vec2 from "./vec2";
 
@@ -26,14 +28,20 @@ class Main {
 
 		// canvas stuff
 		this.canvas = document.getElementById("canvas");
-		this.canvas.width = 800;
-		this.canvas.height= 800;
+		this.canvas.width = 1600;
+		this.canvas.height= 1000;
 		this.ctx = this.canvas.getContext("2d");
 		this.ctx.imageSmoothingEnabled= false;
 		this.mat = this.ctx.getTransform();
 
 		// game stuff
-		this.map = new TileMap();
+		let n = 24;
+		this.drawer = new Drawer(24*2-1);
+
+		this.map = new TileMap(24);
+		this.map.register_with_drawer(this.drawer);
+
+		this.goat = new Goat(10, 10, this.map, this.drawer);
 
 		this.step();
 	}
@@ -72,8 +80,11 @@ class Main {
 
 		this.mat = this.ctx.getTransform();
 
+		this.ctx.translate(800, -200);
+		this.ctx.scale(2.0,2.0);
+
 		// draw things
-		this.map.draw(this.ctx);
+		this.drawer.draw(this.ctx);
 	}
 
 	mousedown(e){
