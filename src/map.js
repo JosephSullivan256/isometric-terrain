@@ -1,5 +1,6 @@
 import grass_tile_src from "./assets/grassTileTall.png";
 import tree_tile_src from "./assets/treeTileTall.png";
+import water_tile_src from "./assets/waterTileTall.png";
 import { blur } from "./num";
 
 function choose_random_index(frequencies, total){
@@ -18,8 +19,18 @@ export default class TileMap {
 	constructor(n) {
 		this.n = n;
 
-		this.init_height_map();
-		this.init_tile_map();
+		this.genereate_terrain();
+	}
+
+	update(event_queue){
+		let i = event_queue.length;
+		while(i--){
+			let [e, name] = event_queue[i];
+			if(name === "generate"){
+				this.genereate_terrain();
+				event_queue.splice(i, 1);
+			}
+		}
 	}
 
 	register_with_drawer(renderer){
@@ -34,12 +45,32 @@ export default class TileMap {
 		}
 	}
 
+	genereate_terrain(){
+		this.init_tile_map();
+		this.init_height_map();
+	}
+
 	init_height_map(){
+		// set random heights
 		this.height_map = this.empty_array();
 		for(let r = 0; r < this.n; r++){ for(let c = 0; c < this.n; c++){
-			this.height_map[r][c] = 240.0*Math.random();
+			let range = 480.0;
+			this.height_map[r][c] = range*(Math.random()-0.5);
 		}}
-		this.height_map = blur(this.height_map, this.n, this.n, 5);
+		// blur the noise
+		//this.height_map = blur(this.height_map, this.n, this.n, 9);
+		this.height_map = blur(this.height_map, this.n, this.n, 3);
+		this.height_map = blur(this.height_map, this.n, this.n, 3);
+		this.height_map = blur(this.height_map, this.n, this.n, 3);
+
+		// set water level
+		let water_level = 20.0;
+		for(let r = 0; r < this.n; r++){ for(let c = 0; c < this.n; c++){
+			if(this.height_map[r][c] > water_level){
+				this.height_map[r][c] = water_level;
+				this.tile_map[r][c] = 2;
+			}
+		}}
 	}
 
 	init_tile_map(){
@@ -49,6 +80,9 @@ export default class TileMap {
 		let tree_tile = new Image();
 		tree_tile.src = tree_tile_src;
 
+		let water_tile = new Image();
+		water_tile.src = water_tile_src;
+
 		this.tiles = [
 			{
 				image: grass_tile,
@@ -57,6 +91,10 @@ export default class TileMap {
 			{
 				image: tree_tile,
 				offset: [-14,-36]
+			},
+			{
+				image: water_tile,
+				offset: [0, 0]
 			}
 		];
 

@@ -10,6 +10,8 @@ window.addEventListener("load", ()=>{
 
 class Main {
 	constructor() {
+		window.main = this;
+
 		// time stuff
 		this.current_time = Date.now();
 		this.old_time = this.current_time;
@@ -21,15 +23,14 @@ class Main {
 		window.addEventListener("mousemove", (e)=>{this.mousemove(e)});
 		window.addEventListener("mouseup", (e)=>{this.mouseup(e)});
 		window.addEventListener("dblclick", (e)=>{this.dblclick(e)});
-		document.getElementById("button").addEventListener("click", (e)=>{
-			e.changeState = true;
-			this.event_queue.push([e,"button"]);
+		document.getElementById("generate").addEventListener("click", (e)=>{
+			this.event_queue.push([e,"generate"]);
 		});
 
 		// canvas stuff
 		this.canvas = document.getElementById("canvas");
 		this.canvas.width = 1600;
-		this.canvas.height= 1000;
+		this.canvas.height= 1200;
 		this.ctx = this.canvas.getContext("2d");
 		this.ctx.imageSmoothingEnabled= false;
 		this.mat = this.ctx.getTransform();
@@ -56,11 +57,11 @@ class Main {
 		// restore to default transformations (I do this now so that the matrix for the canvas is good)
 		this.ctx.restore();
 
-		//window.requestAnimationFrame(()=>this.step());
+		window.requestAnimationFrame(()=>this.step());
 	}
 
 	update() {
-		
+		this.map.update(this.event_queue);
 
 		// even though we clear the event queue here anyways, do make an effort to pop events
 		// off when reacting to them, so that events aren't accepted by multiple things
@@ -80,7 +81,7 @@ class Main {
 
 		this.mat = this.ctx.getTransform();
 
-		this.ctx.translate(800, -200);
+		this.ctx.translate(800, 150);
 		this.ctx.scale(2.0,2.0);
 
 		// draw things
