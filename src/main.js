@@ -48,7 +48,7 @@ class Main {
 		// restore to default transformations (I do this now so that the matrix for the canvas is good)
 		this.ctx.restore();
 
-		window.requestAnimationFrame(()=>this.step());
+		//window.requestAnimationFrame(()=>this.step());
 	}
 
 	update() {
